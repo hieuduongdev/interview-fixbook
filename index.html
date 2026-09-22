@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Interview Fixbook</title>
+<style>
+  :root {
+    --bg:#0b1020; --panel:#121a2e; --panel2:#18223b; --text:#edf2ff;
+    --muted:#9eabc7; --line:#283452; --accent:#7c9cff; --good:#79e2b6; --bad:#ff9a9a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:linear-gradient(180deg,#0a0f1d,#0f1730);color:var(--text)}
+  .wrap{max-width:1180px;margin:auto;padding:28px}
+  header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:22px}
+  h1{margin:0;font-size:32px;letter-spacing:-.03em}
+  .sub{color:var(--muted);margin-top:6px}
+  .badge{background:#1c2744;border:1px solid var(--line);padding:8px 12px;border-radius:999px;color:#cbd5f4;font-size:13px}
+  .toolbar{display:grid;grid-template-columns:1fr 220px auto auto;gap:10px;margin-bottom:18px}
+  input,select,textarea,button{font:inherit}
+  input,select,textarea{width:100%;background:#0f1730;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px 14px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  button{border:0;border-radius:12px;padding:11px 14px;cursor:pointer;background:var(--accent);color:#0b1020;font-weight:700}
+  button.secondary{background:#1b2744;color:var(--text);border:1px solid var(--line)}
+  button.danger{background:#3a1d28;color:#ffb6c2;border:1px solid #613040}
+  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .stat{padding:10px 12px;background:#121a2e;border:1px solid var(--line);border-radius:12px;color:var(--muted)}
+  .stat b{color:var(--text)}
+  .grid{display:grid;gap:14px}
+  .card{background:rgba(18,26,46,.94);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.14)}
+  .top{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+  .topic{font-size:13px;color:#cbd5f4;background:#1d2948;padding:6px 9px;border-radius:999px}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px}
+  .answer{line-height:1.55;white-space:pre-wrap}
+  .answer.original{color:#ffd0d0}
+  .answer.fixed{color:#d8ffe9}
+  .note{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:#b7c2dd;font-size:14px}
+  .actions{display:flex;gap:8px}
+  .actions button{padding:7px 10px;font-size:12px}
+  .empty{text-align:center;color:var(--muted);padding:50px}
+  dialog{width:min(720px,92vw);border:1px solid var(--line);border-radius:18px;background:#121a2e;color:var(--text);padding:0}
+  dialog::backdrop{background:rgba(0,0,0,.65)}
+  .modal{padding:22px}
+  .modal h2{margin-top:0}
+  .formgrid{display:grid;gap:12px}
+  textarea{min-height:120px;resize:vertical}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+  .review{background:#111a30;border:1px dashed #3a4b78;border-radius:16px;padding:18px;margin-bottom:18px}
+  .review .fixedReveal{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  @media(max-width:760px){.toolbar{grid-template-columns:1fr 1fr}.cols{grid-template-columns:1fr}header{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Interview Fixbook</h1>
+      <div class="sub">Your English interview answers — original vs. interview-ready.</div>
+    </div>
+    <div class="badge">Local-first • Auto saved</div>
+  </header>
+
+  <div class="toolbar">
+    <input id="search" placeholder="Search answers, topics, notes..." />
+    <select id="topicFilter"><option value="">All topics</option></select>
+    <button id="reviewBtn" class="secondary">Review random</button>
+    <button id="addBtn">+ Add answer</button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="count">0</b> answers</div>
+    <div class="stat"><b id="topics">0</b> topics</div>
+    <div class="stat">Data stays in your browser unless you export it</div>
+  </div>
+
+  <div id="reviewBox"></div>
+  <div id="list" class="grid"></div>
+
+  <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+    <button class="secondary" id="exportBtn">Export JSON</button>
+    <button class="secondary" id="importBtn">Import JSON</button>
+    <input id="fileInput" type="file" accept=".json" hidden>
+    <button class="danger" id="resetBtn">Reset demo data</button>
+  </div>
+</div>
+
+<dialog id="dialog">
+  <div class="modal">
+    <h2 id="modalTitle">Add answer</h2>
+    <div class="formgrid">
+      <input id="fTopic" placeholder="Topic, e.g. .NET Core" />
+      <textarea id="fOriginal" placeholder="Your original answer"></textarea>
+      <textarea id="fFixed" placeholder="Fixed / interview-ready answer"></textarea>
+      <textarea id="fNote" placeholder="Mentor note"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="secondary" id="cancelBtn">Cancel</button>
+      <button id="saveBtn">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const SEED = [{"topic":"Introduction","original":"Well, um, yeah Like a developer with um, 3 years of experience My f- My main skill is My main skill are dotnet, web, web.net queue, AWS My role in my team is um backend developer, see some","fixed":"I'm a backend developer with three years of experience. My main skills are .NET, Web API, RabbitMQ, and AWS. In my current team, I'm responsible for developing APIs, fixing production issues, and reviewing code.","note":"Use a clean 3-part structure: experience → stack → responsibilities."},{"topic":"Project","original":"Currently, I'm working um hotel booking system, the project is build RabbitMQ, Redis, and AWS, and C-sharp","fixed":"Currently, I'm working on a hotel booking system. It allows users to make reservations and manage bookings. We mainly use C#, RabbitMQ, Redis, and AWS.","note":"Explain what the system does before listing technologies."},{"topic":"Project","original":"The system is to Give a the people to place the reservation and booking in in the japan time","fixed":"The system allows users to make hotel reservations and manage their bookings.","note":"Keep the business explanation simple and client-friendly."},{"topic":"Payment","original":"Well, in my project, I building the API and handling the payment with GMO The third party come from Japan","fixed":"In my project, I build APIs and work on payment integration with GMO, a third-party provider from Japan.","note":"Use present simple for ongoing responsibilities."},{"topic":"Payment","original":"Yeah, when the removal We made GMO when GMO retry in five Turn Tsk. And uh is will make uh an uh double booking and we need to use uh Idem potent- potency key to resolve This","fixed":"When integrating with GMO, we had to handle retry scenarios where the same request could be sent more than once. To prevent double bookings, we used an idempotency key so duplicate requests wouldn't be processed twice.","note":"Problem → risk → solution."},{"topic":"Testing","original":"Yeah we use a tool called K6 to make uh multiple request in uh a second and we will check the log and see the result on the uh idem potency key with uh is uh We saw it will be lock uh The key is uh already used","fixed":"We used K6 to simulate concurrent requests, then checked the logs and database to confirm that requests with the same idempotency key didn't create duplicates. Only the first request was processed.","note":"State the tool, what you simulated, and what you verified."},{"topic":"Monitoring","original":"Yeah, I would be use uh logging to log all the transaction in my project and I will set the alert allow more time to pay- payment of the booking Process it will be sent to Slack","fixed":"I would add structured logs for payment transactions and idempotency keys, and create an alert if something looks abnormal, for example by sending a Slack notification.","note":"Mention structured logs + alert condition + destination."},{"topic":".NET Core","original":"Transient is uh one record will is will be create a new instance every the code","fixed":"Transient creates a new instance every time it's requested. I would use it for lightweight, stateless services.","note":"Definition + example."},{"topic":".NET Core","original":"Well, a scope is is will be create a new instance every time is every request","fixed":"Scoped creates one instance per request. A common example is DbContext.","note":"Keep it short and concrete."},{"topic":".NET Core","original":"Singleton is uh will be create instance in When the server start","fixed":"Singleton creates one instance for the whole application lifetime. It's useful for shared stateless services or configuration, but not for DbContext.","note":"Mention the lifetime and a safe use case."},{"topic":".NET Core","original":"The middleware in the dotnet core like a pipeline is will be go to the First and go to the last Last middleware and it will be go around to the first and is to end request","fixed":"Middleware works like a pipeline. Each middleware can handle the request, pass it to the next one, and then handle the response on the way back.","note":"Very good mental model; focus on request down, response back."},{"topic":"Performance","original":"The first I will be check uh The application level. I will be check uh the code is uh have uh n plus one or if not I, I check uh the select query is selecting all the row or select uh less row","fixed":"First, I would check the database queries for N+1 problems or over-fetching. Those issues often cause APIs to slow down under load.","note":"Name the issue and explain why it matters."},{"topic":"Monitoring","original":"Yeah, will be use uh monitoring system like Sentry it will be record all the millisecond of step of the request","fixed":"I would also use a monitoring tool like Sentry or an APM to see where time is being spent in each request.","note":"Use 'where time is being spent' for latency breakdown."},{"topic":"EF Core","original":"the IEnumerable is will be. is will list all the data to the the list and the queryable is uh will be will be sent will be not sent not fetch all the data in database...","fixed":"IEnumerable is usually used with data that's already in memory, while IQueryable lets you build a query that EF can translate to SQL. This allows the database to do the filtering before the data is returned.","note":"The key concept is where execution/filtering happens."},{"topic":"EF Core","original":"So, I will be use uh select uh select uh method in the link queue to select uh The column in is uh we the data need only","fixed":"I would use Select to project only the columns I need instead of fetching the whole entity.","note":"Use 'project' when discussing Select in LINQ."},{"topic":".NET Core","original":"Here, I will explain The async is uh is be friable the method is uh have uh Async able method and await if uh is when the method is will return the result","fixed":"Async and await let the server handle other requests while waiting for I/O, such as database or HTTP calls, without blocking threads. This improves scalability.","note":"For web APIs, emphasize non-blocking I/O and scalability."}];
+const KEY = 'interview_fixbook_v1';
+let data = JSON.parse(localStorage.getItem(KEY) || 'null') || SEED;
+let editing = null;
+
+const $ = s => document.querySelector(s);
+const esc = s => (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function persist() { localStorage.setItem(KEY, JSON.stringify(data)); render(); }
+function topics() { return [...new Set(data.map(x=>x.topic).filter(Boolean))].sort(); }
+
+function renderFilters() {
+  const current = $('#topicFilter').value;
+  $('#topicFilter').innerHTML = '<option value="">All topics</option>' + topics().map(t=>'<option>'+esc(t)+'</option>').join('');
+  $('#topicFilter').value = current;
+}
+
+function render() {
+  renderFilters();
+  const q = $('#search').value.toLowerCase().trim();
+  const tf = $('#topicFilter').value;
+  const filtered = data.filter(x => (!tf || x.topic===tf) && (!q || [x.topic,x.original,x.fixed,x.note].join(' ').toLowerCase().includes(q)));
+  $('#count').textContent = data.length;
+  $('#topics').textContent = topics().length;
+  $('#list').innerHTML = filtered.length ? filtered.map((x)=>{
+    const idx = data.indexOf(x);
+    return '<article class="card"><div class="top"><span class="topic">'+esc(x.topic||'General')+'</span><div class="actions"><button class="secondary" onclick="editItem('+idx+')">Edit</button><button class="danger" onclick="delItem('+idx+')">Delete</button></div></div><div class="cols"><div><div class="label">My answer</div><div class="answer original">'+esc(x.original)+'</div></div><div><div class="label">Fixed sentence</div><div class="answer fixed">'+esc(x.fixed)+'</div></div></div>'+(x.note?'<div class="note"><b>Mentor note:</b> '+esc(x.note)+'</div>':'')+'</article>';
+  }).join('') : '<div class="empty">No matching answers.</div>';
+}
+
+function openDialog(idx=null) {
+  editing = idx;
+  const x = idx===null ? {topic:'',original:'',fixed:'',note:''} : data[idx];
+  $('#modalTitle').textContent = idx===null ? 'Add answer' : 'Edit answer';
+  $('#fTopic').value=x.topic||''; $('#fOriginal').value=x.original||''; $('#fFixed').value=x.fixed||''; $('#fNote').value=x.note||'';
+  $('#dialog').showModal();
+}
+window.editItem = i => openDialog(i);
+window.delItem = i => { if(confirm('Delete this answer?')) { data.splice(i,1); persist(); } };
+
+$('#addBtn').onclick = ()=>openDialog();
+$('#cancelBtn').onclick = ()=>$('#dialog').close();
+$('#saveBtn').onclick = ()=> {
+  const x = {topic:$('#fTopic').value.trim()||'General', original:$('#fOriginal').value.trim(), fixed:$('#fFixed').value.trim(), note:$('#fNote').value.trim()};
+  if(!x.original || !x.fixed) return alert('Please fill in both original and fixed answers.');
+  if(editing===null) data.unshift(x); else data[editing]=x;
+  $('#dialog').close(); persist();
+};
+$('#search').oninput = render;
+$('#topicFilter').onchange = render;
+
+$('#reviewBtn').onclick = ()=> {
+  if(!data.length) return;
+  const x = data[Math.floor(Math.random()*data.length)];
+  $('#reviewBox').innerHTML = '<div class="review"><div class="label">Review • '+esc(x.topic)+'</div><div class="answer original">'+esc(x.original)+'</div><button id="revealBtn" class="secondary" style="margin-top:12px">Show fixed answer</button><div class="fixedReveal" id="fixedReveal"><div class="label">Fixed sentence</div><div class="answer fixed">'+esc(x.fixed)+'</div>'+(x.note?'<div class="note">'+esc(x.note)+'</div>':'')+'</div></div>';
+  $('#revealBtn').onclick=()=>{$('#fixedReveal').style.display='block'; $('#revealBtn').style.display='none';};
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+$('#exportBtn').onclick = ()=> {
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='interview-fixbook.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+$('#importBtn').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange = async e => {
+  const file=e.target.files[0]; if(!file) return;
+  try {
+    const parsed=JSON.parse(await file.text());
+    if(!Array.isArray(parsed)) throw new Error();
+    data=parsed; persist();
+  } catch { alert('Invalid JSON file.'); }
+};
+$('#resetBtn').onclick = ()=> { if(confirm('Reset to the original demo data?')) { data=SEED; persist(); } };
+
+render();
+</script>
+</body>
+</html>
